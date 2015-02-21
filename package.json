@@ -41,7 +41,7 @@
     "url": "https://github.com/tracker1/gulp-header/issues"
   },
   "dependencies": {
-    "gulp-util": "*",
+    "lodash.template": "^3.3.0",
     "object-assign": "*",
     "through2": "*"
   },

@@ -2,7 +2,7 @@
 'use strict';
 
 var through = require('through2');
-var gutil = require('gulp-util');
+var template = require('lodash.template');
 var extend = require('object-assign');
 
 var headerPlugin = function(headerText, data) {
@@ -10,18 +10,18 @@ var headerPlugin = function(headerText, data) {
 
     var stream = through.obj(function(file, enc, cb) {
 
-        var template = gutil.template(headerText, extend({file : file}, data));
+        var compiled = template(headerText)(extend({file : file}, data));
 
         if (file.isBuffer()) {
             file.contents = Buffer.concat([
-                new Buffer(template),
+                new Buffer(compiled),
                 file.contents
             ]);
         }
 
         if (file.isStream()) {
             var stream = through();
-            stream.write(new Buffer(template));
+            stream.write(new Buffer(compiled));
             stream.on('error', this.emit.bind(this, 'error'));
             file.contents = file.contents.pipe(stream);
         }
