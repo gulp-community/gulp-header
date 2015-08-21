@@ -55,6 +55,10 @@ module.exports = function (headerText, data) {
   }
 
   function EndStream (cb) {
+    // return if there are no files in the stream
+    if(!_file){
+      return cb();
+    }
     var file = _file.clone({ contents: false });
 
     // make sure streaming content is preserved
