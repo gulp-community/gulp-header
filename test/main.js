@@ -27,7 +27,7 @@ describe('gulp-header', function() {
   function getFakeFileReadStream(){
     return new File({
       contents: es.readArray(['Hello world']),
-      path: './test/fixture/file2.txt'
+      path: './test/fixture/anotherFile.txt'
     });
   }
 

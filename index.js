@@ -17,9 +17,10 @@ var fs = require('fs');
 * gulp-header plugin
 */
 
-module.exports = function (headerText, data) {
+module.exports = function (headerText, data, fileTypes) {
   headerText = headerText || '';
-
+  fileTypes = fileTypes || [];
+  
   function TransformStream(file, enc, cb) {
     var filename;
     var concat;
@@ -43,6 +44,14 @@ module.exports = function (headerText, data) {
       return cb();
     }
 
+    //if filetypes provided, add header only to those files
+    if (fileTypes.length > 0) {
+      if (!fileTypes.includes(filename.split('.')[1])) {
+        this.push(file);
+        // tell the stream engine that we are done with this file
+        return cb();
+      }
+    }
 
     if (file.isBuffer()) {
       concat.add(null, new Buffer(template));
