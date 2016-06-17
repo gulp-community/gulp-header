@@ -35,7 +35,7 @@ module.exports = function (headerText, data) {
     var template = data === false ? headerText : gutil.template(headerText, extend({ file: file, filename: filename }, data));
     concat = new Concat(true, filename);
 
-    if (fs.lstatSync(file.path).isDirectory()) {
+    if (fs.existsSync(file.path) && fs.lstatSync(file.path).isDirectory()) {
       // make sure the file goes through the next gulp plugin
       this.push(file);
 
