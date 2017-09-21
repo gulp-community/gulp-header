@@ -45,14 +45,14 @@ var banner = ['/**',
   ''].join('\n');
 
 gulp.src('./foo/*.js')
-  .pipe(header(banner, { pkg : pkg } ))
+  .pipe(header(banner, { pkg } ))
   .pipe(gulp.dest('./dist/'))
 
 
 // reading the header file from disk
 var fs = require('fs');
 gulp.src('./foo/*.js')
-  .pipe(header(fs.readFileSync('header.txt', 'utf8'), { pkg : pkg } ))
+  .pipe(header(fs.readFileSync('header.txt', 'utf8'), { pkg } ))
   .pipe(gulp.dest('./dist/'))
 
 
@@ -60,7 +60,7 @@ gulp.src('./foo/*.js')
 return gulp.src([
         'src/*.coffee',
     ])
-    .pipe(header(banner, { pkg : pkg } ))
+    .pipe(header(banner, { pkg } ))
     .pipe(sourcemaps.init()) // init sourcemaps *after* header
     .pipe(coffee({
         bare: true
