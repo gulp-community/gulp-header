@@ -7,6 +7,7 @@ var should = require('should');
 var fs = require('fs');
 var path = require('path');
 var es = require('event-stream');
+var stream = require('stream');
 var File = require('vinyl');
 var gulp = require('gulp');
 require('mocha');
@@ -25,7 +26,7 @@ describe('gulp-header', function() {
 
   function getFakeFileReadStream(){
     return new File({
-      contents: es.readArray(['Hello world']),
+      contents: new stream.Readable({objectMode: true}).wrap(es.readArray(['Hello world'])),
       path: './test/fixture/anotherFile.txt'
     });
   }
@@ -44,7 +45,7 @@ describe('gulp-header', function() {
         should.exist(newFile.path);
         should.exist(newFile.relative);
         should.exist(newFile.contents);
-        newFile.path.should.equal('./test/fixture/file.txt');
+        newFile.path.should.equal('test/fixture/file.txt');
         newFile.relative.should.equal('file.txt');
         newFile.contents.toString('utf8').should.equal('Hello world');
         ++file_count;
@@ -120,7 +121,7 @@ describe('gulp-header', function() {
         ''].join('\n'));
       stream.on('data', function (newFile) {
         should.exist(newFile.contents);
-        newFile.contents.toString('utf8').should.equal('file.txt\n./test/fixture/file.txt\nHello world');
+        newFile.contents.toString('utf8').should.equal('file.txt\ntest/fixture/file.txt\nHello world');
       });
       stream.once('end', done);
 
