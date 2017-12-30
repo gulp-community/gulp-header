@@ -8,7 +8,7 @@
 var Concat = require('concat-with-sourcemaps');
 var extend = require('object-assign');
 var through = require('through2');
-var gutil = require('gulp-util');
+var lodashTemplate = require('lodash.template');
 var stream = require('stream');
 var path = require('path');
 var fs = require('fs');
@@ -28,7 +28,7 @@ module.exports = function (headerText, data) {
 
     // format template
     var filename = path.basename(file.path);
-    var template = data === false ? headerText : gutil.template(headerText, extend({ file: file, filename: filename }, data));
+    var template = data === false ? headerText : lodashTemplate(headerText)(extend({ file: file, filename: filename }, data));
 
     if (file && typeof file === 'string') {
       this.push(template + file);

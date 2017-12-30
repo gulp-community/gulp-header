@@ -4,7 +4,6 @@
 
 var header = require('../');
 var should = require('should');
-var gutil = require('gulp-util');
 var fs = require('fs');
 var path = require('path');
 var es = require('event-stream');
