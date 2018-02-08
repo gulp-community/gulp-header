@@ -15,13 +15,17 @@ require('mocha');
 describe('gulp-header', function() {
   var fakeFile;
 
-  function getFakeFile(fileContent){
-    return new File({
+  function getFakeFile(fileContent, data){
+    var result = new File({
       path: './test/fixture/file.txt',
       cwd: './test/',
       base: './test/fixture/',
       contents: new Buffer(fileContent || '')
     });
+    if (data !== undefined) {
+      result.data = data;
+    }
+    return result;
   }
 
   function getFakeFileReadStream(){
@@ -126,6 +130,18 @@ describe('gulp-header', function() {
       stream.once('end', done);
 
       stream.write(fakeFile);
+      stream.end();
+    });
+
+    it('should access the data of the current file', function(done) {
+      var stream = header('<%= license %>\n');
+      stream.on('data', function (newFile) {
+        should.exist(newFile.contents);
+        newFile.contents.toString('utf8').should.equal('WTFPL\nHello world');
+      });
+      stream.once('end', done);
+
+      stream.write(getFakeFile('Hello world', {license: "WTFPL"}));
       stream.end();
     });
 

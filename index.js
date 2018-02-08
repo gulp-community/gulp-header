@@ -22,7 +22,7 @@ module.exports = function (headerText, data) {
   function TransformStream(file, enc, cb) {
     // direct support for gulp-data
     if (file.data) {
-      data = extend(data, file.data);
+      data = Object.assign({}, data, file.data);
     }
 
     // format template
