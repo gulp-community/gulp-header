@@ -1,14 +1,9 @@
-/* jshint node: true */
-/* global describe, it, beforeEach */
-'use strict';
-
-var header = require('../');
-var should = require('should');
-var fs = require('fs');
-var path = require('path');
-var stream = require('stream');
-var File = require('vinyl');
-var gulp = require('gulp');
+const header = require('../');
+const should = require('should');
+const path = require('path');
+const stream = require('stream');
+const File = require('vinyl');
+const gulp = require('gulp');
 require('mocha');
 
 const streamToString = stream =>
@@ -17,17 +12,17 @@ const streamToString = stream =>
       const chunks = [];
       stream.on('data', chunk => chunks.push(chunk));
       stream.on('error', reject);
-      stream.on('end', _ => resolve(Buffer.concat(chunks).toString('utf8')));
+      stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
     } catch (err) {
       reject(err);
     }
   });
 
-describe('gulp-header', function() {
-  var fakeFile;
+describe('gulp-header', () => {
+  let fakeFile;
 
-  function getFakeFile(fileContent, data) {
-    var result = new File({
+  const getFakeFile = (fileContent, data) => {
+    const result = new File({
       path: './test/fixture/file.txt',
       cwd: './test/',
       base: './test/fixture/',
@@ -37,10 +32,10 @@ describe('gulp-header', function() {
       result.data = data;
     }
     return result;
-  }
+  };
 
-  function getFakeFileReadStream() {
-    var s = new stream.Readable({ objectMode: true });
+  const getFakeFileReadStream = () => {
+    const s = new stream.Readable({ objectMode: true });
     s._read = () => {};
     s.push('Hello world');
     s.push(null);
@@ -48,17 +43,17 @@ describe('gulp-header', function() {
       contents: s,
       path: './test/fixture/anotherFile.txt',
     });
-  }
+  };
 
-  beforeEach(function() {
+  beforeEach(() => {
     fakeFile = getFakeFile('Hello world');
   });
 
-  describe('header', function() {
-    it('file should pass through', function(done) {
-      var file_count = 0;
-      var stream = header();
-      stream.on('data', function(newFile) {
+  describe('header', () => {
+    it('file should pass through', (done) => {
+      let file_count = 0;
+      const stream = header();
+      stream.on('data', (newFile) => {
         should.exist(newFile);
         should.exist(newFile.path);
         should.exist(newFile.relative);
@@ -69,7 +64,7 @@ describe('gulp-header', function() {
         ++file_count;
       });
 
-      stream.once('end', function() {
+      stream.once('end', () => {
         file_count.should.equal(1);
         done();
       });
@@ -78,13 +73,13 @@ describe('gulp-header', function() {
       stream.end();
     });
 
-    it('should prepend the header to the file content', function(done) {
-      var myHeader = header('And then i said : ');
+    it('should prepend the header to the file content', (done) => {
+      const myHeader = header('And then i said : ');
 
       myHeader.write(fakeFile);
 
-      myHeader.once('data', function(file) {
-        should(file.isBuffer()).ok;
+      myHeader.once('data', (file) => {
+        should(file.isBuffer()).ok();
         should.exist(file.contents);
         file.contents.toString('utf8').should.equal('And then i said : Hello world');
         done();
@@ -92,13 +87,13 @@ describe('gulp-header', function() {
       myHeader.end();
     });
 
-    it('should prepend the header to the file content (stream)', function(done) {
-      var myHeader = header('And then i said : ');
+    it('should prepend the header to the file content (stream)', (done) => {
+      const myHeader = header('And then i said : ');
 
       myHeader.write(getFakeFileReadStream());
 
-      myHeader.once('data', async function(file) {
-        should(file.isStream()).ok;
+      myHeader.once('data', async (file) => {
+        should(file.isStream()).ok();
         const result = await streamToString(file.contents);
         result.should.equal('And then i said : Hello world');
         done();
@@ -106,10 +101,10 @@ describe('gulp-header', function() {
       myHeader.end();
     });
 
-    it('should format the header', function(done) {
-      var stream = header('And then <%= foo %> said : ', { foo: 'you' });
-      //var stream = header('And then ${foo} said : ', { foo : 'you' } );
-      stream.on('data', function(newFile) {
+    it('should format the header', (done) => {
+      const stream = header('And then <%= foo %> said : ', { foo: 'you' });
+      //const stream = header('And then ${foo} said : ', { foo : 'you' } );
+      stream.on('data', (newFile) => {
         should.exist(newFile.contents);
         newFile.contents.toString('utf8').should.equal('And then you said : Hello world');
       });
@@ -119,9 +114,9 @@ describe('gulp-header', function() {
       stream.end();
     });
 
-    it('should format the header (ES6 delimiters)', function(done) {
-      var stream = header('And then ${foo} said : ', { foo: 'you' });
-      stream.on('data', function(newFile) {
+    it('should format the header (ES6 delimiters)', (done) => {
+      const stream = header('And then ${foo} said : ', { foo: 'you' });
+      stream.on('data', (newFile) => {
         should.exist(newFile.contents);
         newFile.contents.toString('utf8').should.equal('And then you said : Hello world');
       });
@@ -131,9 +126,9 @@ describe('gulp-header', function() {
       stream.end();
     });
 
-    it('should access to the current file', function(done) {
-      var stream = header(['<%= file.relative %>', '<%= file.path %>', ''].join('\n'));
-      stream.on('data', function(newFile) {
+    it('should access to the current file', (done) => {
+      const stream = header(['<%= file.relative %>', '<%= file.path %>', ''].join('\n'));
+      stream.on('data', (newFile) => {
         should.exist(newFile.contents);
         newFile.contents
           .toString('utf8')
@@ -145,9 +140,9 @@ describe('gulp-header', function() {
       stream.end();
     });
 
-    it('should access the data of the current file', function(done) {
-      var stream = header('<%= license %>\n');
-      stream.on('data', function(newFile) {
+    it('should access the data of the current file', (done) => {
+      const stream = header('<%= license %>\n');
+      stream.on('data', (newFile) => {
         should.exist(newFile.contents);
         newFile.contents.toString('utf8').should.equal('WTFPL\nHello world');
       });
@@ -157,32 +152,32 @@ describe('gulp-header', function() {
       stream.end();
     });
 
-    it('multiple files should pass through', function(done) {
-      var headerText = 'use strict;',
+    it('multiple files should pass through', (done) => {
+      const headerText = 'use strict;',
         stream = gulp.src('./test/fixture/*.txt').pipe(header(headerText)),
         files = [];
 
       stream.on('error', done);
-      stream.on('data', function(file) {
+      stream.on('data', (file) => {
         file.contents.toString('utf8').should.startWith(headerText);
         files.push(file);
       });
-      stream.on('end', function() {
+      stream.on('end', () => {
         files.length.should.equal(2);
         done();
       });
     });
 
-    it('no files are acceptable', function(done) {
-      var headerText = 'use strict;',
+    it('no files are acceptable', (done) => {
+      const headerText = 'use strict;',
         stream = gulp.src('./test/fixture/*.html').pipe(header(headerText)),
         files = [];
 
       stream.on('error', done);
-      stream.on('data', function(file) {
+      stream.on('data', (file) => {
         files.push(file);
       });
-      stream.on('end', function() {
+      stream.on('end', () => {
         files.length.should.equal(0);
         done();
       });

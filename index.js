@@ -1,30 +1,26 @@
-/* jshint node: true */
-'use strict';
-
 /**
  * Module dependencies.
  */
 
-var Concat = require('concat-with-sourcemaps');
-var through = require('through2');
-var lodashTemplate = require('lodash.template');
-var stream = require('stream');
-var path = require('path');
-var fs = require('fs');
+const Concat = require('concat-with-sourcemaps');
+const through = require('through2');
+const lodashTemplate = require('lodash.template');
+const stream = require('stream');
+const path = require('path');
 
 /**
  * gulp-header plugin
  */
 
-module.exports = function(headerText, data) {
+module.exports = (headerText, data) => {
   headerText = headerText || '';
 
   function TransformStream(file, enc, cb) {
     // format template
-    var filename = path.basename(file.path);
-    var template =
-      data === false
-        ? headerText
+    const filename = path.basename(file.path);
+    const template =
+      data === false ?
+        headerText
         : lodashTemplate(headerText)(
             Object.assign({}, file.data || {}, { file: file, filename: filename }, data)
           );
@@ -42,7 +38,7 @@ module.exports = function(headerText, data) {
 
     // handle file stream;
     if (file.isStream()) {
-      var stream = through();
+      const stream = through();
       stream.write(Buffer.from(template));
       stream.on('error', this.emit.bind(this, 'error'));
       file.contents = file.contents.pipe(stream);
@@ -51,7 +47,7 @@ module.exports = function(headerText, data) {
     }
 
     // variables to handle direct file content manipulation
-    var concat = new Concat(true, filename);
+    const concat = new Concat(true, filename);
 
     // add template
     concat.add(null, Buffer.from(template));
@@ -82,14 +78,14 @@ module.exports = function(headerText, data) {
 /**
  * is stream?
  */
-function isStream(obj) {
+const isStream = (obj) => {
   return obj instanceof stream.Stream;
-}
+};
 
 /**
  * Is File, and Exists
  */
-function isExistingFile(file) {
+const isExistingFile = (file) => {
   try {
     if (!(file && typeof file === 'object')) return false;
     if (file.isDirectory()) return false;
@@ -98,4 +94,4 @@ function isExistingFile(file) {
     if (typeof file.contents === 'string') return true;
   } catch (err) {}
   return false;
-}
+};
