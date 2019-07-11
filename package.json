@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "concat-with-sourcemaps": "^1.1.0",
-    "lodash.template": "^4.4.0",
+    "lodash.template": "^4.5.0",
     "map-stream": "0.0.7",
     "through2": "^2.0.0"
   },
