@@ -101,6 +101,6 @@ Default: `{}`
 
 The data object used to populate the text.
 
-In addition to the passed in data, `file` will be the stream object for the file being templated against and `filename` will be the path relative from the stream's basepath.
+In addition to the passed in data, `file` will be the [stream object](https://github.com/gulpjs/vinyl#instance-properties) for the file being templated against and `filename` will be the path relative from the stream's basepath.
 
 *NOTE: using `false` will disable template processing of the header*
