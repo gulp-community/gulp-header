@@ -57,7 +57,7 @@
   "dependencies": {
     "concat-with-sourcemaps": "^1.1.0",
     "jest": "^25.1.0",
-    "lodash.template": "^4.5.0",
+    "lodash": "^4.17.21",
     "map-stream": "0.0.7",
     "through2": "^2.0.0"
   },
