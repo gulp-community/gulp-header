@@ -4,7 +4,7 @@
 
 const Concat = require('concat-with-sourcemaps');
 const through = require('through2');
-const _ = require('lodash');
+const _template = require('lodash/template.js');
 const stream = require('stream');
 const path = require('path');
 
@@ -21,7 +21,7 @@ module.exports = (headerText, data) => {
     const template =
       data === false
         ? headerText
-        : _.template(headerText)(
+        : _template(headerText)(
             Object.assign({}, file.data || {}, { file: file, filename: filename }, data)
           );
 

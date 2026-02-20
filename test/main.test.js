@@ -1,17 +1,22 @@
-require('jest');
-const path = require('path');
-const stream = require('stream');
-const File = require('vinyl');
-const gulp = require('gulp');
-const header = require('../');
+import test, { beforeEach } from 'node:test';
+import path from 'path';
+import * as nodeStream from 'stream';
+import { once } from 'node:events';
+import { expect } from 'chai';
+import File from 'vinyl';
+import gulp from 'gulp';
+import header from '../src/index.js';
 
-const streamToString = stream =>
+const describe = test;
+const it = test;
+
+const streamToString = st =>
   new Promise((resolve, reject) => {
     try {
       const chunks = [];
-      stream.on('data', chunk => chunks.push(chunk));
-      stream.on('error', reject);
-      stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+      st.on('data', chunk => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+      st.on('error', reject);
+      st.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
     } catch (err) {
       reject(err);
     }
@@ -34,7 +39,7 @@ describe('gulp-header', () => {
   };
 
   const getFakeFileReadStream = () => {
-    const s = new stream.Readable({ objectMode: true });
+    const s = new nodeStream.Readable({ objectMode: true });
     s._read = () => {};
     s.push('Hello world');
     s.push(null);
@@ -49,155 +54,183 @@ describe('gulp-header', () => {
   });
 
   describe('header', () => {
-    it('file should pass through', done => {
-      expect.assertions(8);
-
+    it('file should pass through', async () => {
       let file_count = 0;
-      const stream = header();
-      stream.on('data', newFile => {
-        expect(newFile).toBeDefined();
-        expect(newFile.path).toBeDefined();
-        expect(newFile.relative).toBeDefined();
-        expect(newFile.contents).toBeDefined();
-        expect(newFile.path).toBe('test/fixture/file.txt'.split('/').join(path.sep));
-        expect(newFile.relative).toBe('file.txt');
-        expect(newFile.contents.toString('utf8')).toBe('Hello world');
+      let assertions = 0;
+      const s = header();
+      s.on('data', newFile => {
+        expect(newFile).to.exist;
+        expect(newFile.path).to.exist;
+        expect(newFile.relative).to.exist;
+        expect(newFile.contents).to.exist;
+        expect(newFile.path).to.equal('test/fixture/file.txt'.split('/').join(path.sep));
+        expect(newFile.relative).to.equal('file.txt');
+        expect(newFile.contents.toString('utf8')).to.equal('Hello world');
         ++file_count;
+        assertions += 7;
       });
 
-      stream.once('end', () => {
-        expect(file_count).toBe(1);
-        done();
-      });
+      s.write(fakeFile);
+      s.end();
 
-      stream.write(fakeFile);
-      stream.end();
+      await once(s, 'end');
+      expect(file_count).to.equal(1);
+      assertions += 1;
+      expect(assertions).to.equal(8);
     });
 
-    it('should prepend the header to the file content', done => {
-      expect.assertions(3);
-
+    it('shouldprepend the header to the file content', async () => {
       const myHeader = header('And then i said : ');
+
+      let assertions = 0;
 
       myHeader.write(fakeFile);
 
-      myHeader.once('data', file => {
-        expect(file.isBuffer()).toBeTruthy();
-        expect(file.contents).toBeDefined();
-        expect(file.contents.toString('utf8')).toBe('And then i said : Hello world');
-        done();
-      });
+      const [file] = await once(myHeader, 'data');
+      expect(file.isBuffer()).to.be.true;
+      assertions++;
+      expect(file.contents).to.exist;
+      assertions++;
+      expect(file.contents.toString('utf8')).to.equal('And then i said : Hello world');
+      assertions++;
       myHeader.end();
+      expect(assertions).to.equal(3);
     });
 
-    it('should prepend the header to the file content (stream)', done => {
-      expect.assertions(2);
-
+    it('should prepend the header to the file content (stream)', async () => {
       const myHeader = header('And then i said : ');
+
+      let assertions = 0;
 
       myHeader.write(getFakeFileReadStream());
 
-      myHeader.once('data', async file => {
-        expect(file.isStream()).toBeTruthy();
-        const result = await streamToString(file.contents);
-        expect(result).toBe('And then i said : Hello world');
-        done();
-      });
+      const [file] = await once(myHeader, 'data');
+      expect(file.isStream()).to.be.true;
+      assertions++;
+      const result = await streamToString(file.contents);
+      expect(result).to.equal('And then i said : Hello world');
+      assertions++;
       myHeader.end();
+      expect(assertions).to.equal(2);
     });
 
-    it('should format the header', done => {
-      expect.assertions(2);
-
-      const stream = header('And then <%= foo %> said : ', { foo: 'you' });
-      //const stream = header('And then ${foo} said : ', { foo : 'you' } );
-      stream.on('data', newFile => {
-        expect(newFile.contents).toBeDefined();
-        expect(newFile.contents.toString('utf8')).toBe('And then you said : Hello world');
+    it('should format the header', async () => {
+      const s = header('And then <%= foo %> said : ', { foo: 'you' });
+      const results = [];
+      let assertions = 0;
+      s.on('data', newFile => {
+        expect(newFile.contents).to.exist;
+        assertions++;
+        expect(newFile.contents.toString('utf8')).to.equal('And then you said : Hello world');
+        assertions++;
+        results.push(newFile);
       });
-      stream.once('end', done);
 
-      stream.write(fakeFile);
-      stream.end();
+      s.write(fakeFile);
+      s.end();
+      await once(s, 'end');
+      expect(results.length).to.be.greaterThan(0);
+      // two assertions in data
+      expect(assertions).to.equal(2);
     });
 
-    it('should format the header (ES6 delimiters)', done => {
-      expect.assertions(2);
-
-      const stream = header('And then ${foo} said : ', { foo: 'you' });
-      stream.on('data', newFile => {
-        expect(newFile.contents).toBeDefined();
-        expect(newFile.contents.toString('utf8')).toBe('And then you said : Hello world');
+    it('should format the header (ES6 delimiters)', async () => {
+      const s = header('And then ${foo} said : ', { foo: 'you' });
+      const results = [];
+      let assertions = 0;
+      s.on('data', newFile => {
+        expect(newFile.contents).to.exist;
+        assertions++;
+        expect(newFile.contents.toString('utf8')).to.equal('And then you said : Hello world');
+        assertions++;
+        results.push(newFile);
       });
-      stream.once('end', done);
 
-      stream.write(fakeFile);
-      stream.end();
+      s.write(fakeFile);
+      s.end();
+      await once(s, 'end');
+      expect(results.length).to.be.greaterThan(0);
+      expect(assertions).to.equal(2);
     });
 
-    it('should access to the current file', done => {
-      expect.assertions(2);
-
+    it('should access to the current file', async () => {
       const expectedContents = 'file.txt\ntest/fixture/file.txt\nHello world'
         .split('/')
         .join(path.sep);
-      const stream = header(['<%= file.relative %>', '<%= file.path %>', ''].join('\n'));
-      stream.on('data', newFile => {
-        expect(newFile.contents).toBeDefined();
-        expect(newFile.contents.toString('utf8')).toBe(expectedContents);
+      const s = header(['<%= file.relative %>', '<%= file.path %>', ''].join('\n'));
+      const results = [];
+      let assertions = 0;
+      s.on('data', newFile => {
+        expect(newFile.contents).to.exist;
+        assertions++;
+        expect(newFile.contents.toString('utf8')).to.equal(expectedContents);
+        assertions++;
+        results.push(newFile);
       });
-      stream.once('end', done);
 
-      stream.write(fakeFile);
-      stream.end();
+      s.write(fakeFile);
+      s.end();
+      await once(s, 'end');
+      expect(results.length).to.be.greaterThan(0);
+      expect(assertions).to.equal(2);
     });
 
-    it('should access the data of the current file', done => {
-      expect.assertions(2);
-
-      const stream = header('<%= license %>\n');
-      stream.on('data', newFile => {
-        expect(newFile.contents).toBeDefined();
-        expect(newFile.contents.toString('utf8')).toBe('WTFPL\nHello world');
+    it('should access the data of the current file', async () => {
+      const s = header('<%= license %>\n');
+      const results = [];
+      let assertions = 0;
+      s.on('data', newFile => {
+        expect(newFile.contents).to.exist;
+        assertions++;
+        expect(newFile.contents.toString('utf8')).to.equal('WTFPL\nHello world');
+        assertions++;
+        results.push(newFile);
       });
-      stream.once('end', done);
 
-      stream.write(getFakeFile('Hello world', { license: 'WTFPL' }));
-      stream.end();
+      s.write(getFakeFile('Hello world', { license: 'WTFPL' }));
+      s.end();
+      await once(s, 'end');
+      expect(results.length).to.be.greaterThan(0);
+      expect(assertions).to.equal(2);
     });
 
-    it('multiple files should pass through', done => {
-      expect.assertions(3);
-
-      const headerText = 'use strict;',
-        stream = gulp.src('./test/fixture/*.txt').pipe(header(headerText)),
-        files = [];
-
-      stream.on('error', done);
-      stream.on('data', file => {
-        expect(file.contents.toString('utf8')).toMatch(/^use strict;/);
-        files.push(file);
+    it('multiple files should pass through', async () => {
+      const headerText = 'use strict;';
+      const s = gulp.src('./test/fixture/*.txt').pipe(header(headerText));
+      const files = [];
+      let assertions = 0;
+      await new Promise((resolve, reject) => {
+        s.on('error', reject);
+        s.on('data', file => {
+          expect(file.contents.toString('utf8')).to.match(/^use strict;/);
+          assertions++;
+          files.push(file);
+        });
+        s.on('end', () => resolve());
       });
-      stream.on('end', () => {
-        expect(files.length).toBe(2);
-        done();
-      });
+
+      expect(files.length).to.equal(2);
+      // two data assertions + one final length assertion
+      assertions++;
+      expect(assertions).to.equal(3);
     });
 
-    it('no files are acceptable', done => {
-      expect.assertions(1);
-      const headerText = 'use strict;',
-        stream = gulp.src('./test/fixture/*.html').pipe(header(headerText)),
-        files = [];
+    it('no files are acceptable', async () => {
+      const headerText = 'use strict;';
+      const s = gulp.src('./test/fixture/*.html').pipe(header(headerText));
+      const files = [];
+      let assertions = 0;
+      await new Promise((resolve, reject) => {
+        s.on('error', reject);
+        s.on('data', file => {
+          files.push(file);
+        });
+        s.on('end', () => resolve());
+      });
 
-      stream.on('error', done);
-      stream.on('data', file => {
-        files.push(file);
-      });
-      stream.on('end', () => {
-        expect(files.length).toBe(0);
-        done();
-      });
+      expect(files.length).to.equal(0);
+      assertions++;
+      expect(assertions).to.equal(1);
     });
   });
 });

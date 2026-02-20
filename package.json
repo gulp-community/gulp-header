@@ -2,20 +2,7 @@
   "name": "gulp-header",
   "version": "2.0.10",
   "description": "Gulp extension to add header to file(s) in the pipeline.",
-  "main": "./index.js",
-  "proxy": null,
-  "https-proxy": null,
-  "directories": {
-    "test": "test"
-  },
-  "jshintConfig": {
-    "esversion": 8,
-    "strict": "implied",
-    "undef": true,
-    "unused": true,
-    "mocha": true,
-    "node": true
-  },
+  "main": "./src/index.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/gulp-community/gulp-header.git"
@@ -45,29 +32,19 @@
   "bugs": {
     "url": "https://github.com/gulp-community/gulp-header/issues"
   },
-  "prettier": {
-    "printWidth": 100,
-    "tabWidth": 2,
-    "useTabs": false,
-    "singleQuote": true,
-    "trailingComma": "es5",
-    "parser": "babel",
-    "jsxBracketSameLine": true
-  },
   "dependencies": {
     "concat-with-sourcemaps": "^1.1.0",
-    "jest": "^25.1.0",
     "lodash": "^4.17.21",
-    "map-stream": "0.0.7",
-    "through2": "^2.0.0"
+    "map-stream": "^0.0.7",
+    "through2": "^4.0.2"
   },
   "devDependencies": {
-    "gulp": "^4.0.0",
-    "should": "*",
+    "chai": "^6.2.2",
+    "gulp": "^5.0.1",
     "vinyl": "*"
   },
   "scripts": {
-    "test": "jest --coverage",
+    "test": "node --experimental-test-coverage --test",
     "publish-major": "npm version major && git push origin master && git push --tags",
     "publish-minor": "npm version minor && git push origin master && git push --tags",
     "publish-patch": "npm version patch && git push origin master && git push --tags"
