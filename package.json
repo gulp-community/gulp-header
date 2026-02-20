@@ -1,6 +1,6 @@
 {
   "name": "gulp-header",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "description": "Gulp extension to add header to file(s) in the pipeline.",
   "main": "./index.js",
   "proxy": null,
