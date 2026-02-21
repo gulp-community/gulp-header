@@ -17,3 +17,7 @@ npm-debug.log
 node_modules
 test
 .travis.yml
+
+.editorconfig
+.github
+.git
