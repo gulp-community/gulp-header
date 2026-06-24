@@ -5,7 +5,7 @@
   "main": "./src/index.js",
   "repository": {
     "type": "git",
-    "url": "git://github.com/gulp-community/gulp-header.git"
+    "url": "git+https://github.com/gulp-community/gulp-header.git"
   },
   "keywords": [
     "header",
